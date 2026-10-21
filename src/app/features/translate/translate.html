@@ -1,0 +1,197 @@
+<input #picker class="visually-hidden" type="file" accept=".docx,.pdf" tabindex="-1" aria-hidden="true" (change)="onBrowse($event)" />
+
+<ng-template #badge>
+  <svg class="badge" viewBox="0 0 52 64" aria-hidden="true">
+    <path d="M6 4h28l12 12v42a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" fill="#f3f7fd" stroke="#8fa9d8" stroke-width="2" />
+    <path d="M34 4v12h12" fill="#dbe6f8" stroke="#8fa9d8" stroke-width="2" stroke-linejoin="round" />
+    <text x="25" y="46" text-anchor="middle" font-size="12" font-weight="700" fill="#2358a8">{{ fileKind() }}</text>
+  </svg>
+</ng-template>
+
+<ng-template #languages>
+  <span class="langs">English <app-icon name="arrow-right" [size]="16" /> Russian</span>
+</ng-template>
+
+@switch (view()) {
+  <!-- ------------------------------------------------------------ choose a file -->
+  @case ('empty') {
+    <section
+      class="drop"
+      [class.over]="dragging()"
+      [class.rejected]="fileProblem() && !dragging()"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave($event)"
+      (drop)="onDrop($event)"
+      aria-label="Upload a document"
+    >
+      @if (fileProblem() && !dragging()) {
+        <span class="reject-icon"><app-icon name="alert-circle" [size]="38" /></span>
+        <h1 role="alert">
+          @switch (fileProblem()) {
+            @case ('type') {
+              Only .docx and .pdf<br />files are supported
+            }
+            @case ('size') {
+              This file is too large<br />(the limit is 50 MB)
+            }
+            @default {
+              This file is empty
+            }
+          }
+        </h1>
+        <button type="button" class="btn btn-outline browse" (click)="picker.click()">Browse files</button>
+      } @else {
+        <svg class="art" viewBox="0 0 170 130" aria-hidden="true">
+          <rect x="62" y="14" width="76" height="92" rx="9" transform="rotate(6 100 60)" fill="#dbe6f8" />
+          <text x="108" y="72" font-size="30" font-weight="700" fill="#9db6e3" transform="rotate(6 100 60)">Я</text>
+          <rect x="28" y="10" width="76" height="92" rx="9" fill="#fff" stroke="#2358a8" stroke-width="3" />
+          <text x="66" y="62" text-anchor="middle" font-size="40" font-weight="700" fill="#2358a8">A</text>
+          <rect x="40" y="74" width="46" height="4" rx="2" fill="#b9cbea" />
+          <rect x="40" y="84" width="32" height="4" rx="2" fill="#b9cbea" />
+          <circle cx="112" cy="102" r="19" fill="#2358a8" stroke="#fff" stroke-width="4" />
+          <path d="M112 112V93m-8 8 8-8 8 8" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        @if (dragging()) {
+          <h1>Drop your file to upload it</h1>
+        } @else {
+          <h1>Drag and drop your<br />Word or PDF file here</h1>
+        }
+        <div class="or"><span>or</span><button type="button" class="btn btn-outline browse" (click)="picker.click()">browse files</button></div>
+      }
+      <span class="accepted">Accepted: .docx and .pdf</span>
+    </section>
+  }
+
+  <!-- ------------------------------------------------------------ file chosen -->
+  @case ('selected') {
+    <section class="card">
+      <div class="card-head">
+        <span class="eyebrow">Selected file</span>
+        <ng-container *ngTemplateOutlet="languages" />
+      </div>
+      <div class="file">
+        <ng-container *ngTemplateOutlet="badge" />
+        <div class="file-text">
+          <strong [title]="fileName()">{{ fileName() }}</strong>
+          <span>{{ fileSize() }}</span>
+        </div>
+        <button type="button" class="remove" aria-label="Remove file" [disabled]="starting()" (click)="clearFile()">
+          <app-icon name="x" [size]="22" />
+        </button>
+      </div>
+      <button type="button" class="btn btn-primary wide" [disabled]="starting()" (click)="translate()">
+        {{ starting() ? 'Uploading…' : 'Translate' }}
+        @if (!starting()) {
+          <app-icon name="arrow-right" [size]="20" />
+        }
+      </button>
+    </section>
+  }
+
+  <!-- ------------------------------------------------------------ in progress -->
+  @case ('working') {
+    <section class="card" aria-live="polite">
+      <div class="card-head">
+        <span class="eyebrow">In progress</span>
+        <ng-container *ngTemplateOutlet="languages" />
+      </div>
+      <div class="file">
+        <ng-container *ngTemplateOutlet="badge" />
+        <div class="file-text">
+          <strong [title]="fileName()">{{ fileName() }}</strong>
+          <span>{{ fileSize() }}</span>
+        </div>
+      </div>
+
+      <div class="status">
+        <span class="spinner" aria-hidden="true"></span>
+        <h2>{{ title() }}</h2>
+        <span class="percent">{{ percent() }}%</span>
+      </div>
+      <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="percent()" [attr.aria-label]="title()">
+        <span class="fill" [style.width.%]="percent()"></span>
+      </div>
+
+      <ol class="steps">
+        @for (label of steps; track label; let i = $index) {
+          <li [class.done]="i < step()" [class.current]="i === step()">
+            <span class="seg"></span>
+            <span class="label">
+              @if (i < step()) {
+                <app-icon name="check" [size]="15" />
+              }
+              {{ label }}
+            </span>
+          </li>
+        }
+      </ol>
+
+      <p class="note"><app-icon name="clock" [size]="22" /> This can take several minutes for long documents. Keep this page open.</p>
+      <button type="button" class="btn btn-outline" (click)="cancel()">Cancel</button>
+    </section>
+  }
+
+  <!-- ------------------------------------------------------------ finished -->
+  @case ('done') {
+    <section class="card center">
+      <svg class="success" viewBox="0 0 220 190" aria-hidden="true">
+        <circle cx="110" cy="92" r="46" fill="#e6eefb" />
+        <circle cx="110" cy="92" r="34" fill="#cfdcf5" />
+        <circle cx="110" cy="92" r="26" fill="#2b67c1" />
+        <path d="m98 93 8 8 16-17" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
+        <g fill="#2358a8">
+          <circle cx="110" cy="22" r="3.5" />
+          <circle cx="62" cy="40" r="3" opacity=".6" />
+          <circle cx="162" cy="48" r="3" opacity=".6" />
+          <circle cx="40" cy="96" r="3" />
+          <circle cx="182" cy="106" r="3.5" opacity=".45" />
+          <circle cx="64" cy="150" r="3.5" opacity=".5" />
+          <circle cx="158" cy="148" r="3" />
+          <path d="M146 28v10m-5-5h10M52 70v8m-4-4h8M174 80v8m-4-4h8M88 160v8m-4-4h8" stroke="#6f93d4" stroke-width="2" stroke-linecap="round" fill="none" />
+        </g>
+      </svg>
+      <h1>Translation ready</h1>
+      <p class="file-chip"><app-icon name="document" [size]="22" /> <span [title]="resultName()">{{ resultName() }}</span></p>
+      @if (review(); as label) {
+        <p class="review"><app-icon name="warning" [size]="20" /> {{ label }}</p>
+      }
+      <button type="button" class="btn btn-primary wide" [disabled]="downloading() !== null || !job()?.canDownload" (click)="download('download')">
+        <app-icon name="download" [size]="20" /> {{ downloading() === 'download' ? 'Downloading…' : 'Download Word file' }}
+      </button>
+      @if (job()?.canDownloadReview) {
+        <button type="button" class="btn btn-outline wide" [disabled]="downloading() !== null" (click)="download('review')">
+          <app-icon name="download" [size]="20" /> {{ downloading() === 'review' ? 'Downloading…' : 'Download review file' }}
+        </button>
+        <p class="hint">Shows the English and Russian side by side,<br />with items that need a person to check.</p>
+      }
+      @if (downloadError()) {
+        <p class="problem" role="alert">{{ downloadError() }}</p>
+      }
+      @if (job()?.filesExpired) {
+        <p class="problem" role="alert">These files have expired. Translate the document again to get a new copy.</p>
+      }
+      <hr />
+      <button type="button" class="btn btn-outline another" (click)="startOver()">
+        <app-icon name="plus" [size]="18" /> Translate another document
+      </button>
+    </section>
+  }
+
+  <!-- ------------------------------------------------------------ failed -->
+  @case ('failed') {
+    <section class="card center">
+      <span class="halo"><span><app-icon name="alert-circle" [size]="42" /></span></span>
+      <h1>Translation could<br />not be completed</h1>
+      <p class="why" role="alert">{{ failure() }}</p>
+      @if (fileName()) {
+        <p class="file-chip"><app-icon name="document" [size]="22" /> <span [title]="fileName()">{{ fileName() }}</span></p>
+      }
+      <div class="actions">
+        @if (canRetry()) {
+          <button type="button" class="btn btn-primary" (click)="retry()">Try again</button>
+        }
+        <button type="button" class="btn btn-outline" (click)="startOver()">Start over</button>
+      </div>
+    </section>
+  }
+}

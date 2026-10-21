@@ -1,0 +1,99 @@
+<section class="admin-page">
+  <header class="page-head">
+    <h1>Employees</h1>
+    <p>Everyone who has signed in. Switching an account off signs that person out straight away.</p>
+  </header>
+
+  <div class="toolbar">
+    <label class="grow search">
+      Search
+      <app-icon name="search" [size]="18" />
+      <input type="search" placeholder="Name or e-mail" [ngModel]="search()" (ngModelChange)="search.set($event); filtersChanged()" />
+    </label>
+    <label>
+      Status
+      <select [ngModel]="state()" (ngModelChange)="state.set($event); filtersChanged()">
+        <option value="">All</option>
+        <option value="active">Active</option>
+        <option value="off">Switched off</option>
+      </select>
+    </label>
+    <label>
+      Role
+      <select [ngModel]="role()" (ngModelChange)="role.set($event); filtersChanged()">
+        <option value="">All</option>
+        <option value="Employee">Employee</option>
+        <option value="SuperUser">Developer</option>
+      </select>
+    </label>
+  </div>
+
+  @if (error()) {
+    <p class="alert-error" role="alert">{{ error() }}</p>
+  }
+
+  <div class="table-card">
+    <div class="table-scroll">
+      <table class="data">
+        <thead>
+          <tr>
+            <th>Person</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>First signed in</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (e of data()?.items; track e.id) {
+            <tr>
+              <td>
+                <span class="name">{{ e.fullName }}@if (isMe(e)) { (you)}</span>
+                <span class="sub">{{ e.email }}</span>
+              </td>
+              <td>
+                <span class="pill" [class]="e.role === 'SuperUser' ? 'pill dev' : 'pill'">{{ e.role === 'SuperUser' ? 'Developer' : 'Employee' }}</span>
+              </td>
+              <td>
+                <span class="pill" [class]="e.isActive ? 'pill active' : 'pill off'">{{ e.isActive ? 'Active' : 'Switched off' }}</span>
+              </td>
+              <td class="num">{{ e.createdAt | date: 'd MMM y' }}</td>
+              <td>
+                <div class="actions">
+                  <button
+                    type="button"
+                    class="btn btn-sm"
+                    [class.btn-ghost]="confirming() !== e.id"
+                    [class.danger]="confirming() === e.id && e.isActive"
+                    [class.btn-primary]="confirming() === e.id && !e.isActive"
+                    [disabled]="isMe(e) || saving() === e.id"
+                    [title]="isMe(e) ? 'You cannot switch off your own account.' : ''"
+                    (click)="toggle(e)"
+                  >
+                    @if (saving() === e.id) {
+                      Saving…
+                    } @else if (confirming() === e.id) {
+                      Confirm
+                    } @else {
+                      {{ e.isActive ? 'Switch off' : 'Switch on' }}
+                    }
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (loading()) {
+      <p class="empty-state">Loading…</p>
+    } @else if (data() && data()!.totalCount === 0) {
+      <p class="empty-state">No one matches these filters.</p>
+    }
+
+    @if (data(); as d) {
+      <app-pager [page]="d.page" [pageSize]="d.pageSize" [totalCount]="d.totalCount" [totalPages]="d.totalPages" (pageChange)="goTo($event)" (sizeChange)="resize($event)" />
+    }
+  </div>
+</section>

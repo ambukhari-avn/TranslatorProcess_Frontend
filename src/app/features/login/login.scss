@@ -1,0 +1,135 @@
+:host {
+  display: block;
+}
+
+.screen {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  overflow: hidden;
+}
+
+.glyph {
+  font-size: 760px;
+}
+
+.glyph-ya {
+  right: -60px;
+  top: -190px;
+}
+
+.glyph-a {
+  left: -70px;
+  bottom: -250px;
+}
+
+/* Two tilted sheets behind the card. */
+.stack {
+  position: relative;
+  width: min(100%, 400px);
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-card);
+    background: rgba(255, 255, 255, 0.28);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+  }
+
+  &::before {
+    transform: rotate(-3deg) translate(-14px, 8px);
+  }
+
+  &::after {
+    transform: rotate(2deg) translate(12px, 14px);
+  }
+}
+
+.card {
+  position: relative;
+  z-index: 1;
+  padding: 2.2rem 2rem 2rem;
+  border-radius: var(--radius-card);
+  background: var(--white);
+  box-shadow: var(--shadow-card);
+}
+
+.logo {
+  display: block;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 1.4rem;
+  filter: drop-shadow(0 8px 14px rgba(31, 58, 95, 0.35));
+}
+
+h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.9rem;
+  line-height: 1.15;
+}
+
+.lead {
+  margin: 0 0 1.8rem;
+  color: var(--muted);
+  font-size: 1.05rem;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.55rem;
+  font-weight: 600;
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0 1rem;
+  height: 54px;
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  background: #f8f9fc;
+  color: var(--muted);
+
+  &:focus-within {
+    border-color: var(--blue-500);
+    background: var(--white);
+    box-shadow: 0 0 0 4px rgba(43, 103, 193, 0.16);
+  }
+
+  &.invalid {
+    border-color: var(--danger);
+    background: var(--danger-bg);
+    box-shadow: none;
+  }
+
+  input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: 0;
+    outline: 0;
+    background: none;
+    color: var(--ink);
+
+    &::placeholder {
+      color: #8a96ad;
+    }
+  }
+}
+
+.error {
+  margin: 0.55rem 0 0;
+  color: var(--danger);
+  font-size: 0.92rem;
+  font-weight: 500;
+}
+
+.btn {
+  width: 100%;
+  margin-top: 1.4rem;
+}

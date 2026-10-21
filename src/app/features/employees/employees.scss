@@ -1,0 +1,13 @@
+:host {
+  display: block;
+}
+
+.danger {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: var(--white);
+
+  &:hover:not(:disabled) {
+    background: #9a1d12;
+  }
+}

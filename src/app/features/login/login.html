@@ -1,0 +1,45 @@
+<div class="screen blue-bg">
+  <span class="glyph glyph-ya" aria-hidden="true">Я</span>
+  <span class="glyph glyph-a" aria-hidden="true">A</span>
+
+  <div class="stack">
+    <form class="card" (ngSubmit)="submit()" novalidate>
+      <img class="logo" src="slovo-pulse-icon.svg" alt="" width="64" height="64" />
+      <h1>Slovo Pulse</h1>
+      <p class="lead">Translate English documents into Russian.</p>
+
+      <label for="email">Work email</label>
+      <div class="field" [class.invalid]="problem()">
+        <app-icon name="mail" [size]="22" />
+        <input
+          id="email"
+          name="email"
+          type="email"
+          inputmode="email"
+          autocomplete="email"
+          placeholder="name@company.com"
+          [ngModel]="email()"
+          (ngModelChange)="onInput($event)"
+          [attr.aria-invalid]="problem() ? 'true' : null"
+          [attr.aria-describedby]="problem() ? 'email-error' : null"
+        />
+      </div>
+
+      @if (problem() === 'invalid') {
+        <p class="error" id="email-error" role="alert">Enter a valid work email.</p>
+      } @else if (problem() === 'domain') {
+        <p class="error" id="email-error" role="alert">Use your {{ domainHint }} work email.</p>
+      }
+      @if (serverError(); as message) {
+        <p class="error" role="alert">{{ message }}</p>
+      }
+
+      <button type="submit" class="btn btn-primary" [disabled]="busy()">
+        {{ busy() ? 'Opening Microsoft…' : 'Continue' }}
+        @if (!busy()) {
+          <app-icon name="arrow-right" [size]="20" />
+        }
+      </button>
+    </form>
+  </div>
+</div>

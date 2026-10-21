@@ -1,0 +1,117 @@
+<section class="admin-page">
+  <header class="page-head">
+    <h1>History</h1>
+    <p>Every translation, by everyone.</p>
+  </header>
+
+  <div class="toolbar">
+    <label class="grow search">
+      Search
+      <app-icon name="search" [size]="18" />
+      <input type="search" placeholder="File name, person or e-mail" [ngModel]="search()" (ngModelChange)="search.set($event); filtersChanged()" />
+    </label>
+    <label>
+      Status
+      <select [ngModel]="status()" (ngModelChange)="status.set($event); filtersChanged()">
+        <option value="">All</option>
+        @for (s of statuses; track s) {
+          <option [value]="s">{{ s }}</option>
+        }
+      </select>
+    </label>
+    <label>
+      From
+      <input type="date" [ngModel]="from()" (ngModelChange)="from.set($event); filtersChanged()" />
+    </label>
+    <label>
+      To
+      <input type="date" [ngModel]="to()" (ngModelChange)="to.set($event); filtersChanged()" />
+    </label>
+    <button type="button" class="btn btn-ghost btn-sm" (click)="refresh()">
+      <app-icon name="refresh" [size]="18" /> Refresh
+    </button>
+  </div>
+
+  @if (error()) {
+    <p class="alert-error" role="alert">{{ error() }}</p>
+  }
+
+  <div class="table-card">
+    <div class="table-scroll">
+      <table class="data">
+        <thead>
+          <tr>
+            <th>When</th>
+            <th>Person</th>
+            <th>Document</th>
+            <th>Status</th>
+            <th>Review</th>
+            <th>Score</th>
+            <th>Took</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (job of data()?.items; track job.id) {
+            <tr>
+              <td class="num">{{ job.createdAt | date: 'd MMM y' }}<span class="sub">{{ job.createdAt | date: 'HH:mm' }}</span></td>
+              <td>
+                <span class="name">{{ job.userName || job.userEmail }}</span>
+                <span class="sub">{{ job.userEmail }}</span>
+              </td>
+              <td>
+                <span class="name" [title]="job.originalName">{{ job.originalName }}</span>
+                <span class="sub">{{ job.inputType.toUpperCase() }} · {{ formatSize(job.sizeBytes) }}</span>
+              </td>
+              <td>
+                <span class="pill" [class]="'pill ' + job.status.toLowerCase()">{{ job.status }}</span>
+                @if (job.status === 'Running') {
+                  <span class="sub">{{ job.progress }}%</span>
+                }
+                @if (job.status === 'Failed' && job.error) {
+                  <span class="sub err" [title]="job.error">{{ job.error }}</span>
+                }
+              </td>
+              <td>
+                @if (review(job); as label) {
+                  <span class="pill review">{{ label }}</span>
+                } @else if (job.status === 'Done') {
+                  <span class="sub">None</span>
+                }
+              </td>
+              <td class="num">{{ job.documentScore !== null ? (job.documentScore | number: '1.0-0') : '' }}</td>
+              <td class="num">{{ took(job) }}</td>
+              <td>
+                <div class="actions">
+                  @if (job.canDownload) {
+                    <button type="button" class="btn btn-ghost btn-sm" [disabled]="downloading() !== null" (click)="download(job, 'download')">
+                      <app-icon name="download" [size]="16" /> Word
+                    </button>
+                  }
+                  @if (job.canDownloadReview) {
+                    <button type="button" class="btn btn-ghost btn-sm" [disabled]="downloading() !== null" (click)="download(job, 'review')">
+                      <app-icon name="download" [size]="16" /> Review
+                    </button>
+                  }
+                  @if (job.filesExpired) {
+                    <span class="sub">Files expired</span>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    @if (loading()) {
+      <p class="empty-state">Loading…</p>
+    } @else if (data() && data()!.totalCount === 0) {
+      <p class="empty-state">No translations match these filters.</p>
+    }
+
+    @if (data(); as d) {
+      <app-pager [page]="d.page" [pageSize]="d.pageSize" [totalCount]="d.totalCount" [totalPages]="d.totalPages" (pageChange)="goTo($event)" (sizeChange)="resize($event)" />
+    }
+  </div>
+</section>

@@ -1,0 +1,11 @@
+:host {
+  display: block;
+}
+
+.err {
+  max-width: 220px;
+  overflow: hidden;
+  color: var(--danger);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
