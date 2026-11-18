@@ -29,12 +29,11 @@ elsewhere (`npx ng serve --port 4201`) and add that origin to the backend's CORS
 
 ## How sign-in works
 
-1. The person enters their work e-mail. Only the domain in `allowedEmailDomains` (`avanceon.ae`) is accepted, the same
-   rule the backend enforces.
-2. **Continue** asks the backend for the Microsoft sign-in address and goes there with the e-mail filled in.
-3. Microsoft sends the person back to `/auth/microsoft/callback`; the one-time code is exchanged for a token and the
+1. **Continue with Microsoft** asks the backend for the Microsoft sign-in address and goes there.
+2. Microsoft sends the person back to `/auth/microsoft/callback`; the one-time code is exchanged for a token and the
    person lands on the translate page. The Azure app registration must list that exact redirect URI
    (`http://localhost:5080/auth/microsoft/callback` locally) and it must equal the backend's `Microsoft:RedirectUri`.
+3. Only company accounts (`Auth:AllowedEmailDomains` in the backend, `avanceon.ae`) are let in; anyone else is sent back to the sign-in page with a message.
 4. If the backend later says the token is no longer valid (for example the account was switched off), the app signs
    the person out.
 

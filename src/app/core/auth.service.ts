@@ -7,18 +7,6 @@ import { environment } from '../../environments/environment';
 import { Session, SignInResponse } from './models';
 
 const STORAGE_KEY = 'dt.session';
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-export type EmailProblem = 'invalid' | 'domain' | null;
-
-/** Checks the work e-mail before anything is sent: a valid address on an allowed domain. */
-export function checkWorkEmail(value: string, allowedDomains: readonly string[] = environment.allowedEmailDomains): EmailProblem {
-  const email = value.trim();
-  if (!EMAIL_PATTERN.test(email)) return 'invalid';
-  if (allowedDomains.length === 0) return null;
-  const domain = email.slice(email.lastIndexOf('@') + 1).toLowerCase();
-  return allowedDomains.some((d) => d.replace(/^@/, '').toLowerCase() === domain) ? null : 'domain';
-}
 
 /** Reads the "exp" claim of a JWT (seconds since 1970); null when the token cannot be read. */
 function tokenExpiry(token: string): number | null {
@@ -63,13 +51,10 @@ export class AuthService {
     return this.state()?.token ?? null;
   }
 
-  /** Asks the backend for the Microsoft sign-in address (with the e-mail filled in) and goes there. */
-  beginSignIn(email: string): Observable<void> {
+  /** Asks the backend for the Microsoft sign-in address and goes there. */
+  beginSignIn(): Observable<void> {
     return this.http.get<{ authUrl: string }>(`${environment.apiUrl}/auth/microsoft/login`).pipe(
-      tap(({ authUrl }) => {
-        const separator = authUrl.includes('?') ? '&' : '?';
-        window.location.assign(`${authUrl}${separator}login_hint=${encodeURIComponent(email.trim())}`);
-      }),
+      tap(({ authUrl }) => window.location.assign(authUrl)),
       map(() => undefined),
     );
   }

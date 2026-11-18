@@ -3,43 +3,24 @@
   <span class="glyph glyph-a" aria-hidden="true">A</span>
 
   <div class="stack">
-    <form class="card" (ngSubmit)="submit()" novalidate>
+    <section class="card">
       <img class="logo" src="slovo-pulse-icon.svg" alt="" width="64" height="64" />
       <h1>Slovo Pulse</h1>
       <p class="lead">Translate English documents into Russian.</p>
 
-      <label for="email">Work email</label>
-      <div class="field" [class.invalid]="problem()">
-        <app-icon name="mail" [size]="22" />
-        <input
-          id="email"
-          name="email"
-          type="email"
-          inputmode="email"
-          autocomplete="email"
-          placeholder="name@company.com"
-          [ngModel]="email()"
-          (ngModelChange)="onInput($event)"
-          [attr.aria-invalid]="problem() ? 'true' : null"
-          [attr.aria-describedby]="problem() ? 'email-error' : null"
-        />
-      </div>
-
-      @if (problem() === 'invalid') {
-        <p class="error" id="email-error" role="alert">Enter a valid work email.</p>
-      } @else if (problem() === 'domain') {
-        <p class="error" id="email-error" role="alert">Use your {{ domainHint }} work email.</p>
-      }
-      @if (serverError(); as message) {
+      @if (error(); as message) {
         <p class="error" role="alert">{{ message }}</p>
       }
 
-      <button type="submit" class="btn btn-primary" [disabled]="busy()">
-        {{ busy() ? 'Opening Microsoft…' : 'Continue' }}
-        @if (!busy()) {
-          <app-icon name="arrow-right" [size]="20" />
-        }
+      <button type="button" class="microsoft" [disabled]="busy()" (click)="signIn()">
+        <svg viewBox="0 0 21 21" width="21" height="21" aria-hidden="true">
+          <rect x="1" y="1" width="9" height="9" fill="#f25022" />
+          <rect x="11" y="1" width="9" height="9" fill="#7fba00" />
+          <rect x="1" y="11" width="9" height="9" fill="#00a4ef" />
+          <rect x="11" y="11" width="9" height="9" fill="#ffb900" />
+        </svg>
+        {{ busy() ? 'Opening Microsoft…' : 'Continue with Microsoft' }}
       </button>
-    </form>
+    </section>
   </div>
 </div>

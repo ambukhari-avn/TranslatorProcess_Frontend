@@ -270,8 +270,11 @@ $side-width: 264px;
 }
 
 .main {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
-  padding: 2rem clamp(1rem, 3vw, 2.5rem) 3rem;
+  min-height: 100vh;
+  padding: 2rem clamp(1rem, 3vw, 2.5rem);
 }
 
 .mobile-bar,
